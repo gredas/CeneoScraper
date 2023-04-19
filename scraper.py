@@ -1,7 +1,7 @@
 import requests
-from bs4 import BeautifulSoup
 import json
-
+from bs4 import BeautifulSoup
+ 
 def get_element(ancestor, selector = None, attribute = None, return_list = False):
     try:
         if return_list:
@@ -10,50 +10,44 @@ def get_element(ancestor, selector = None, attribute = None, return_list = False
             return ancestor[attribute]
         if attribute:
             return ancestor.select_one(selector)[attribute].strip()
-
         return ancestor.select_one(selector).text.strip()
-    except AttributeError:
+    except (AttributeError, TypeError):
         return None
-
+ 
 selectors = {
-    "opinion_id": [None,"data-entry-id"],
+    "opinion_id": [None, "data-entry-id"],
     "author": ["span.user-post__author-name"],
-    "recomendation": ["span.user-post__author-recomendation > em"],
+    "recommendation": ["span.user-post__author-recomendation"],
     "score": ["span.user-post__score-count"],
     "purchased": ["div.review-pz"],
     "published_at": ["span.user-post__published > time:nth-child(1)","datetime"],
-    "purchase_at": ["span.user-post__published > time:nth-child(2)","datetime"],
-    "thumbs_up": ["span[id^=votes-yes]"],
-    "thumbs_down": ["span[id^=votes-no]"],
+    "purchased_at": ["span.user-post__published > time:nth-child(2)","datetime"],
+    "thumbs_up": ["button.vote-yes > span"],
+    "thuhmbs_down": ["button.vote-no > span"],
     "content": ["div.user-post__text"],
-    "cons": ["div.review-feature__col:has(> review-feature__title--negatives)> div.review-feature__item",None, True],
-    "pros": ["div.review-feature__col:has(> review-feature__title--positives)> div.review-feature__item ",None,True],
-}
-
-
-# product_code = input("Podaj kod produktu: ")
-product_code = "96685108"
-page_no = 1
+    "pros": ["div.review-feature__col:has(> div.review-feature__title--positives) > div.review-feature__item", None, True],
+    "cons": ["div.review-feature__col:has(> div.review-feature__title--negatives) > div.review-feature__item", None, True]
+    }
+ 
+#product_code = input('Podaj kod produktu: ')
+product_code = '96685108'
 all_opinions = []
-url = f"https://www.ceneo.pl/{product_code}/#tab=reviews"
+url = f"https://www.ceneo.pl/{product_code}#tab=reviews"
 while(url):
-
-
     print(url)
-    response = requests.get(url, allow_redirects=False)
+    response =  requests.get(url)
     page = BeautifulSoup(response.text, 'html.parser')
     opinions = page.select("div.js_product-review")
     for opinion in opinions:
-        single_opinion={}
-        for key,value in selectors.items():
-            single_opinion[key]=get_element(opinion,*value)
+        single_opinion = {}
+        for key, value in selectors.items():
+            single_opinion[key] = get_element(opinion, *value)
         all_opinions.append(single_opinion)
     try:
-        url = f"https://www.ceneo.pl/{product_code}"+get_element(page, "a.pagination_next", "href")
-    except:
-        url = None
-
-    print(len(all_opinions))
-
-    with open(f"./opinions/{product_code}.json","w",encoding="UTF-8") as jf:
-        json.dump(all_opinions,jf,indent=4,ensure_ascii=False)
+        url = f"https://www.ceneo.pl" + get_element(page, "a.pagination__next", "href")
+    except TypeError: 
+        url =  None
+ 
+print(len(all_opinions))
+with open(f"./opinions/{product_code}.json", 'w', encoding = "UTF-8") as jf:
+    json.dump(all_opinions, jf, indent=4, ensure_ascii=False)
