@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Ekstrakcja opinii</title>
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+</head>
+
+<body>
+  <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+    <a class="navbar-brand" href="#">Przykładowa Strona</a>
+    <!-- Menu nawigacyjne -->
+  </nav>
+
+  <div class="container mt-5">
+    <h1>Ekstrakcja opinii</h1>
+
+    <form id="extractionForm">
+      <div class="form-group">
+        <label for="productId">ID produktu z Ceneo:</label>
+        <input type="text" class="form-control" id="productId" name="productId" required>
+      </div>
+      <button type="submit" class="btn btn-primary">Uruchom proces ekstrakcji</button>
+    </form>
+  </div>
+
+  <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+  <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+
+  
+  <script>
+    document.getElementById('extractionForm').addEventListener('submit', function(event) {
+      event.preventDefault(); // Zapobiegamy domyślnemu zachowaniu formularza
+  
+      var productId = document.getElementById('productId').value;
+      var url = "https://www.ceneo.pl/" + productId;
+  
+      fetch(url)
+        .then(function(response) {
+          if (response.ok) {
+            window.location.href = url; // Przekierowanie na podaną stronę
+          } else {
+            throw new Error('Błąd 404 - Nie znaleziono strony produktu');
+          }
+        })
+        .catch(function(error) {
+          alert(error.message); // Wyświetlanie komunikatu o błędzie
+        });
+    });
+  </script>
+  
+</body>
+
+</html>
